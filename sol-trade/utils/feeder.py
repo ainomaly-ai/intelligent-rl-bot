@@ -30,11 +30,15 @@ class DataLoader:
     def ray_load(self):
         # ds = data.read_csv(csv_file_path)
         # integer_encoded = self.labelenc.fit_transform(data)
-        self.ds = self.ds.map_batches(self.label_encode)
-        batch = self.ds.take_batch(batch_size=40, batch_format="pandas")
-        print(self.ds.schema())
-        print(self.ds.take(1))
-        return self.ds
+        #self.ds = self.ds.map_batches(self.label_encode)
+        #batch = self.ds.take_batch(batch_size=40, batch_format="pandas")
+        self.df['type'] = self.labelenc.fit_transform(self.df['type'])
+        self.df['maker'] = self.labelenc.fit_transform(self.df['maker'])
+        self.df.columns = self.df.iloc[0]
+        self.df = self.df.iloc[1:]
+        # self.df.drop(index=[0])
+        # print(self.df.head(1))
+        return self.df
     
     def enqueue(self, data_item):
         """Enqueues a single piece of data into the queue."""

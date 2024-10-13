@@ -86,37 +86,85 @@ class TradeEnv(gym.Env):
     `config.environment(env_config={"corridor_length": ..})`.
     """
 
-    def __init__(self,data, config: Optional[dict] = None):
+    def __init__(self, config: Optional[dict] = None):
         config = config or {}
         # self.end_sol = 3
         # self.cur_sol = config.get("sol", 7)
         # self.token = 0
         # self.action_space = Box(0.05, 0.3, shape=(1,), dtype=np.float32)
         self.action_space = MultiDiscrete([2, 5 ,3])
-        self.data = data
+        self.window_size = 10
         # low_values = [0, 0, 0, 0, 0]
         # high_values = [3.0, 5.0, ,10,10]
         self.prev_action = None
 
 
-        self.observation_space = Box(low=-np.inf, high=np.inf, shape=(6,), dtype=np.float32)
-
         self.portfolio = Portfolio()
         csv_file_path = "/home/abishek/sol-proj/ray/sol-trade/output.csv"
         data_loader = DataLoader(csv_file_path)
-        print(data_loader.take(1))
+        self.data = data_loader.ray_load()
+        # print(self.data.take(1))
+
+
+        # n_features = self.data.shape[1]
+
+        self.observation_space = Box(low=-np.inf, high=np.inf, shape=(13,7), dtype=np.float32)
+
 
 
     def reset(self, *, seed=None, options=None):
         random.seed(seed)
         self.portfolio = Portfolio()
 
+        """Reset the environment to the initial state."""
+        self.current_step = self.window_size
+       
+        # Return the initial window of past data points (for all features)
+
         # self.cur_sol = self.config.get("sol", 7)
         # self.token = 0
         # Return obs and (empty) info dict.
-        self.observation_space = (self.portfolio.sol, self.prev_action,  self.timestamp, self.maker, self.token, self.current_price )
 
-        return self.observation_space, (np.float32), {"env_state": "reset"}
+        # self.observation_space = (self.data[self.current_step - self.window_size:self.current_step], self.window_size, self.portfolio.sol, self.prev_action )
+
+         # Return the initial window of past data points (for all features)
+        # obs_updated = [np.zeros(self.action_space.shape) if x is  None else x for x in obs]
+        
+
+        # print(obs_updated)
+        # Ensure the observation space is set correctly before returning
+        # reset_obs = np.array(obs_updated, dtype=np.float32)
+
+        arr1 = np.array((self.data[self.current_step - self.window_size:self.current_step]))
+
+        arr2 = np.array([self.window_size])
+
+        arr3 = np.array([self.portfolio.sol])
+
+        # arr4 = self.prev_action
+
+        if self.prev_action is None:
+            arr4 = np.array([0] * len(self.action_space)) 
+        else:
+            arr4 = np.array(self.prev_action)
+
+        arr2_pad = np.pad(arr2, (0,6), mode='constant',constant_values=(0,0))
+        arr3_pad = np.pad(arr3, (0,6), mode='constant',constant_values=(0,0))
+        arr4_pad = np.pad(arr4, (0,4), mode='constant',constant_values=(0,0))
+
+
+
+        combined = np.concatenate([arr1, arr2_pad.reshape(1, 7), arr3_pad.reshape(1, 7), arr4_pad.reshape(1, 7)], axis=0)
+
+#         reset_obs = []
+
+# # # Return obs and (empty) info dict.
+
+        return combined, {"env_state": "reset"}
+
+
+
+
 
     def step(self, action):
         assert action[0] in [0, 1, 2], "Action must be in [0, 1,2]"
@@ -129,26 +177,59 @@ class TradeEnv(gym.Env):
                       "sol_amt" : {0 : 0.2, 1 : 0.4, 2 : 0.6, 3 : 0.8, 4 : 1},
                       "slip" : {0 : "high", 1 : "medium", 2 : "low"}}
         
-        self.portfolio.trade(trade_dict["b_s"][p], trade_dict["sol_amt"][sol_amount], trade_dict["slip"][slip])
+        # print(self.data[self.current_step-1:self.current_step])
+
+        self.portfolio.trade(trade_dict["b_s"][p], trade_dict["sol_amt"][sol_amount],self.data[self.current_step-1:self.current_step], trade_dict["slip"][slip])
 
         self.prev_sol = self.portfolio.sol
 
         self.prev_action = action
 
         # The environment only ever terminates when we reach the goal state.
-        terminated = self.portfolio.sol >= 2
+        terminated = self.current_step >= len(self.data) - 1
         truncated = False
+
+        done = terminated or truncated
         # Produce a random reward from [0.5, 1.5] when we reach the goal.
         reward = self.reward()
         infos = {}
 
-        self.observation_space = (self.portfolio.sol, self.prev_action,  self.data.timestamp, self.data.maker, self.data.token, self.data.current_price )
+        # self.observation_space = (self.data[self.current_step - self.window_size:self.current_step], self.portfolio.sol, self.prev_action)
+
+        obs = []
+
+        arr1 = np.array((self.data[self.current_step - self.window_size:self.current_step]))
+
+        arr2 = np.array([self.window_size])
+
+        arr3 = np.array([self.portfolio.sol])
+
+        if self.prev_action is None:
+            arr4 = np.array([0] * len(self.action_space)) 
+        else:
+            arr4 = np.array(self.prev_action)
+
+        arr2_pad = np.pad(arr2, (0,6), mode='constant',constant_values=(0,0))
+        arr3_pad = np.pad(arr3, (0,6), mode='constant',constant_values=(0,0))
+        arr4_pad = np.pad(arr4, (0,4), mode='constant',constant_values=(0,0))
+
+        obs = [arr1, arr2_pad, arr3_pad, arr4_pad]
+
+        # print(obs)
+
+        obs_combined = np.concatenate([arr1, arr2_pad.reshape(1, 7), arr3_pad.reshape(1, 7), arr4_pad.reshape(1, 7)], axis=0)
+
+
+        # print("Observation space:", (obs_combined))
+        print(self.portfolio.sol)   
+
+        self.current_step += 1
 
         return (
-            np.array([self.cur_sol], np.float32),
+            obs_combined,
             reward,
-            terminated,
             truncated,
+            terminated,
             infos,
         )
     
@@ -157,6 +238,8 @@ class TradeEnv(gym.Env):
         # reward for having more sol than portfolio
         if self.portfolio.sol >= 1:
             port_reward = self.portfolio.sol 
+        else:   
+            port_reward = 0
 
         # reward for having more sol than before and negative reward for having less sol than before
         rec_reward =  0.5 * (self.portfolio.sol - self.prev_sol) #  

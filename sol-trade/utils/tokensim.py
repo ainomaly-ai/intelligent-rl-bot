@@ -11,7 +11,7 @@ class Portfolio:
         self.total_usd = self.sol_value
         
 
-    def trade(self, p, sol_amount, token_price, token_amount, priority):
+    def trade(self, p, sol_amount, token_price, priority):
         slippage = {"high": 0.5, "med": 0.1, "low": 0.05}
         if p == "buy":
             if priority in ["high", "med", "low"]:
