@@ -1,0 +1,18 @@
+# Ignore any files named .env (usually a secret configuration file)
+.env
+
+# Ignore all compiled Python code
+__pycache__/.*
+
+# Ignore any node_modules or yarn_cache directories
+node_modules/
+yarn_cache/
+
+# Ignore any build artifacts from gulp and grunt tasks
+*.log
+*.tmp
+build/
+dist/
+
+*stable_bs/
+*ray_results/
