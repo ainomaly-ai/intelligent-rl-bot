@@ -11,8 +11,12 @@ yarn_cache/
 # Ignore any build artifacts from gulp and grunt tasks
 *.log
 *.tmp
+*.zip
+*.csv
 build/
 dist/
 
 *stable_bs/
 *ray_results/
+*data/
+*.code-workspace
