@@ -20,3 +20,4 @@ dist/
 *ray_results/
 *data/
 *.code-workspace
+*.continue
