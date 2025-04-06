@@ -21,6 +21,7 @@ import talib
 import asyncio
 import aiohttp
 import json
+import sys
 
 from typing import Optional
 Debug =   False
@@ -51,9 +52,6 @@ class TradeEnv(gym.Env):
     The reward function is -0.01 per step taken and a uniform random value between
     0.5 and 1.5 when reaching the goal state.
 
-    You can configure the length of the corridor via the env's config. Thus, in your
-    AlgorithmConfig, you can do:
-    `config.environment(env_config={"corridor_length": ..})`.
     """
 
     def __init__(self,segment_index: int, num_segments: int, 
@@ -141,9 +139,10 @@ class TradeEnv(gym.Env):
         
         random.seed(seed)
 
-        counter = Counter(next(iter(d.keys())) for d in self.portfolio.trade_log)
-        print(f"Total buys: {counter['buy']}")
-        print(f"Total sells: {counter['sell']}")
+        self.counter = Counter(next(iter(d.keys())) for d in self.portfolio.trade_log)
+        print(f"Total buys: {self.counter['buy']}")
+        print(f"Total sells: {self.counter['sell']}")
+        self.prev_counter = None
 
         if EVAL_STREAM:
             self.portfolio = Portfolio(self.parent_id)
@@ -172,7 +171,7 @@ class TradeEnv(gym.Env):
             windowed_data = np.array((self.data[self.current_step - self.window_size:self.current_step]))
 
 
-        print(windowed_data)
+        # print(windowed_data)
         if EVAL_STREAM:
             last_trade = np.array(windowed_data[-1])
             last_trade = np.reshape(last_trade, (1, -1))
@@ -295,6 +294,13 @@ class TradeEnv(gym.Env):
         return result
 
     async def step_async (self, action,):
+
+        self.counter = Counter(next(iter(d.keys())) for d in self.portfolio.trade_log)
+        print(f"Total buys: {self.counter['buy']}")
+        print(f"Total sells: {self.counter['sell']}")
+
+        self.prev_counter = self.counter
+        
         assert action[0] in [0, 1, 2], "Action must be in [0, 1,2]"
         assert action[1] in [0,1,2,3,4], "Action must be in [0, 1, 2, 3, 4]"
         # assert action[2] in [0, 1, 2], "Action must be in [0,1,2]" # will not be used, remove later
@@ -307,7 +313,7 @@ class TradeEnv(gym.Env):
         """ If the token changes, set action to sell all tokens"""
         if self.prev_token is not  None and self.token != self.prev_token:
             h = 2
-        elif self.portfolio.avl_token > 0 and self.portfolio.token_value["token_sol_amount"] > 150:
+        elif next(iter(self.portfolio.token_value.values()), {}).get('token_sol_amount', 0) > 0 and next(val['token_sol_amount'] for val in self.portfolio.token_value.values()) > 150:
             h= 3
         else:
             h= 0
@@ -337,15 +343,27 @@ class TradeEnv(gym.Env):
             # Decrease random trade probability over time
             self.random_trade_prob = max(0.01, 0.1 * (0.99 ** (self.current_step / 100000))) # Adjust the divisor and initial value as needed
 
+        print(f"HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE:{self.prev_token, self.token, h}")
+        print(self.counter)
+        if next(iter(self.portfolio.token_value.values()), {}).get('token_sol_amount', 0) > 0.01 and h == 2 : #sell all as token changes
+                # self.portfolio.update_values(self.token_price[0], self.token, next(val['total_tokens_left'] for val in self.portfolio.tokens.values())) # updating values before executing trade
+                print("Selling all the tokens ................")
+                self.last_agent_trade_action = self.portfolio.trade(self.prev_token, trade_dict["b_s"][1], next(val['token_sol_amount'] for val in self.portfolio.token_value.values()),self.prev_token_price[0], trade_dict["slip"][0])
+                self.portfolio.token_value = {}
+                self.portfolio.tokens ={}
+                print(self.portfolio.token_value)
+                print(self.last_agent_trade_action)
+                sys.exit
+        
+
+        
         if random.random() < self.random_trade_prob:  # Randomly decide whether to trade or not based on the probability
-            if self.portfolio.avl_token > 0 and h == 2 : #sell all as token changes
-                self.portfolio.update_values(self.token_price[0], self.token, self.portfolio.token_value["token_sol_amount"]) # updating values before executing trade
-                self.last_agent_trade_action = self.portfolio.trade(self.prev_token, trade_dict["b_s"]["sell"], trade_dict["sol_amt"][self.portfolio.token_value["token_sol_amount"]],self.token_price[0], trade_dict["slip"]["high"])
-            elif self.portfolio.avl_token > 0 and h ==3 : # Automatically sell if the agent is in 50 dollar profit 
-                self.portfolio.update_values(self.token_price[0], self.token, self.portfolio.token_value["token_sol_amount"]) # updating values before executing trade
-                self.last_agent_trade_action = self.portfolio.trade(self.token, trade_dict["b_s"]["sell"], trade_dict["sol_amt"][sol_amount],self.token_price[0], trade_dict["slip"]["high"]) 
-            elif self.portfolio.token_value.get("token_sol_amount", 0) > 0:
-                self.portfolio.update_values(self.token_price[0], self.token, self.portfolio.token_value["token_sol_amount"]) # updating values before executing trade
+            if next(iter(self.portfolio.token_value.values()), {}).get('token_sol_amount', 0) > 0.01 and h ==3 : # Automatically sell if the agent is in 50 dollar profit 
+                self.portfolio.update_values(self.token_price[0], self.token, next(val['total_tokens_left'] for val in self.portfolio.tokens.values())) # updating values before executing trade
+                self.last_agent_trade_action = self.portfolio.trade(self.token, trade_dict["b_s"][1], trade_dict["sol_amt"][sol_amount],self.token_price[0], trade_dict["slip"][0]) 
+            elif next(iter(self.portfolio.token_value.values()), {}).get('token_sol_amount', 0) > 0.01:
+                print(self.portfolio.token_value)
+                self.portfolio.update_values(self.token_price[0], self.token, next(val['total_tokens_left'] for val in self.portfolio.tokens.values())) # updating values before executing trade
                 self.last_agent_trade_action = self.portfolio.trade(self.token, trade_dict["b_s"][p], trade_dict["sol_amt"][sol_amount],self.token_price[0], trade_dict["slip"][slip])
             else:
                 # self.portfolio.update_values(self.token_price[0], self.token, self.portfolio.token_value["token_sol_amount"]) # updating values before executing trade
@@ -377,6 +395,8 @@ class TradeEnv(gym.Env):
         else:
             # Existing logic for other conditions or actions (buy, hold, etc.)
             pass
+
+        
 
         self.prev_sol = self.portfolio.sol
 
@@ -416,13 +436,15 @@ class TradeEnv(gym.Env):
         if EVAL_STREAM:
             windowed_data = await self.start_server_request(self.parent_id,50)
             windowed_data = np.array(windowed_data)
+            # print(windowed_data)
         else:
             windowed_data = np.array((self.data[self.current_step - self.window_size:self.current_step]))
 
 
         if EVAL_STREAM:
             last_trade = np.array(windowed_data[-1])
-            last_trade = np.reshape(last_trade, (1, -1))
+            last_trade = np.reshape(last_trade, (1, -1)) # reshaping to dimenstion of csv data
+            # print(f"last tradeeee {last_trade}")
         else:
             last_trade = np.array(self.data[self.current_step-1:self.current_step])
         # print(len(self.data))
@@ -434,6 +456,16 @@ class TradeEnv(gym.Env):
         self.last_trade_type = last_trade[0,2], 
         self.last_usd_amount = last_trade[0,4], 
         self.last_trade_token_sol = last_trade[0,5]
+
+        
+        print(self.portfolio.token_value)
+        if next(iter(self.portfolio.token_value.values()), {}).get('token_sol_amount', 0) > 0.01:
+                        # print("Updating token values for the step #################")
+                        # print(self.token_price[0], self.token,next(val['total_tokens_left'] for val in self.portfolio.tokens.values()))
+                        if self.prev_token != self.token:
+                            None
+                        else:    
+                            self.portfolio.update_values(self.token_price[0], self.token, next(val['total_tokens_left'] for val in self.portfolio.tokens.values())) # updating values 
 
         
 
@@ -617,7 +649,11 @@ class TradeEnv(gym.Env):
                 elif sold_tokens_sol > 0:
                     return 1.0  # Some reward for selling, but not at the target amount
             return 0.0
-
+        
+        def trade_penality():
+            if self.counter["buy"] > self.prev_counter["buy"]:
+                return -0.1
+            
 
             # **Compute Rewards**
         sol_reward = sol_increase_reward(self.portfolio.sol, self.prev_sol)
@@ -634,11 +670,14 @@ class TradeEnv(gym.Env):
 
         success_reward = 30 if self.profit_wallet > 1 else 0.0
 
-        usd_total_reward = usd_reward + threshold_port_reward + success_reward
+        trade_pen = trade_penality()
+
+        usd_total_reward = usd_reward + threshold_port_reward + success_reward + trade_pen
 
         
         # Calculate sold tokens in SOL (assuming `self.last_trade_token_sol` is the amount sold in the last trade)
-        sold_tokens_sol = 0.2 if self.last_agent_trade_action == "sold" else 0
+        # sold_tokens_sol = 0.2 if self.last_agent_trade_action == "sold" else 0
+        sold_tokens_sol = 0.2 if self.prev_counter["sell"] < self.counter["sell"] else 0
         
         sell_incentive = sell_incentive_reward(self.portfolio.get_usd_value(), sold_tokens_sol)
 
@@ -702,6 +741,8 @@ class TradeEnv(gym.Env):
                         df = pd.DataFrame(data)
                         df = df.astype(float)
                         print("Received JSON data:")
+                        # print(f"head<< {df.head()}")
+                        # print(f"tail<<<<< {df.tail()}")
                         return df
                     except json.JSONDecodeError as e:
                         print(f"Error decoding JSON: {e}")
@@ -728,13 +769,3 @@ class TradeEnv(gym.Env):
             return result
 
             
-        
-    # @staticmethod
-    # def token(names, volumes, time, prices, liquditys):
-    #     return {
-    #         "name": names,
-    #         "time": time,
-    #         "liquidity": volumes,
-    #         "price": prices,
-    #         "liqudity": liquditys,
-    #     }
