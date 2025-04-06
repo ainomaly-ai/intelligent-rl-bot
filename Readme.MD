@@ -89,8 +89,8 @@ The Sol Trade Bot is an automated trading bot designed to simulate token trading
 
 ## License & Disclaimer
 
-**License**: MIT  
-**Disclaimer**: This project is for educational purposes. Use in real-world scenarios requires thorough testing and compliance with regulations.
+**License**: PPL  
+**Disclaimer**: This project is for educational purposes. Use in real-world scenarios requires thorough testing and compliance with regulations. Check licence for more details
 
 --- 
 
