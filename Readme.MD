@@ -103,6 +103,6 @@ NOTE: The present codebase is not executable and is meant for viewing only. It w
 
 * Refactor the code for execution 
 * Fix the issues for making it a pip package
-* Make usable weights available plug and play
+* Make usable weights available for plug and play
 * Integrate EMP agents for token and metadata retrieval
 * realtime trading with Solana RPC
