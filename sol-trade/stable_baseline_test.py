@@ -56,7 +56,8 @@ env = make_vec_env('Sol-v0', n_envs=num_envs, env_kwargs={"segment_index": 0,
                                                     "segment_indices": segment_indices ,
                                                     "df_file" : df ,
                                                     "eval" : False,
-                                                    "max_steps": 5000})
+                                                    "max_steps": 5000,
+                                                    "parent_id" : None})
 env = VecMonitor(env)
 
 class CustomTensorBoardCallback(BaseCallback):
