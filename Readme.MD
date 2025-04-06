@@ -3,7 +3,7 @@
 ## Overview
 The Sol Trade Bot is an automated trading bot designed to simulate token trading operations in a decentralized environment using reinforcement learning (RL). The project leverages historical data and dynamic market conditions to optimize trading strategies through machine learning models.
 
-NOTE: The present codebase is not executable and is meant for viewing only. It will be refactored as time permits. More details can be seen in Roadmap. 
+NOTE: The present codebase is not executable and is meant for viewing only. It will be refactored as time permits. More details can be seen in the [Roadmap](#roadmap). 
 ---
 
 ## Key Components
