@@ -147,8 +147,8 @@ class Portfolio:
         self.profilt_sol_wallet = get_balance(recipient_key)
         self.avl_token = 0 # available token in portfolio
         #self.bal_usd = 100.0  # Initial USD value
-        self.sol_value = 204.14  # Initial SOL token amount
-        self.avl_sol_value =204.14
+        self.sol_value = 185  # Initial SOL token amount
+        self.avl_sol_value =185
         self.sol_addr = "So11111111111111111111111111111111111111112"
         self.token_sol_amount = {} # Initial token value in SOl
         self.total_usd = 0
@@ -198,7 +198,6 @@ class Portfolio:
                     # self.sol -= total_trade_sol
                     if self.parent_id:
                         sol, token_amount = extract_major_values(self.sol_addr, self.parent_id, int(total_trade_sol*1000000000)) #Get quote from jupiter 
-                        print(f"token amountttttt , solllllllllllllllll: {token_amount, sol}")
                         send_transaction(sender_key, trade_key, sol)
                     else:
                         send_transaction(sender_key, trade_key, total_trade_sol)
@@ -293,9 +292,11 @@ class Portfolio:
 
     ## To do : self.token_value here to add the values of all of them     
     def get_usd_value(self):
+        self.update_wallets()
         return self.avl_sol_value + sum(token['token_value'] for token in self.token_value.values())
     
     def get_state(self):
+        self.update_wallets()
         return self.sol, self.tokens, self.token_value, self.usd_value, self.profilt_sol_wallet
     
     def transfer_sol(self, amount):
@@ -307,7 +308,7 @@ class Portfolio:
     def update_wallets(self):    
         self.sol = get_balance(sender_key)
         self.profilt_sol_wallet = get_balance(recipient_key)
-        self.avl_sol_value = self.avl_sol_value * self.sol
+        self.avl_sol_value = self.sol_value * self.sol
 
 
 
