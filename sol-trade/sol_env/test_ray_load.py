@@ -13,7 +13,12 @@ from ray.rllib.utils.test_utils import (
 from ray.tune.registry import get_trainable_cls, register_env  # noqa
 from ray import data 
 
-csv_file_path = "/home/abishek/sol-proj/ray/sol-trade/output.csv"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+csv_file_path = os.getenv("RAY_LOAD_CSV") 
 
 # Read the CSV file into a Pandas DataFrame
 df = pd.read_csv(csv_file_path)

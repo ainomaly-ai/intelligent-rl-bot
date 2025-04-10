@@ -72,11 +72,7 @@ def burn_all_sol(wallet_key, burner_key):
     else:
         print("Balance is too low to burn.")
 
-# Example Usage:
-# Generate a new keypair for sender and recipient (or use existing ones)
-# sender_key = '/home/abishek/.config/solana/sender.json'  # Replace with actual sender keypair file path
-# recipient_key = '/home/abishek/.config/solana/receipient.json'  # Replace with actual recipient public key
-# burner_key = '/home/abishek/.config/solana/burner.json'  # Replace with actual burner public key
+
 
 # Create new wallets for sender, recipient, and burner
 sender_key, sender_pubkey = create_wallet("sender")

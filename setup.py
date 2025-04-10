@@ -1,7 +1,10 @@
 from setuptools import setup
 
+with open("requirements.txt", "r") as f:
+    install_requires = [line.strip() for line in f]
+
 setup(
-    name="sol",
+    name="RL-trade-bot",
     version="0.0.1",
-    install_requires=["gymnasium", "pygame==2.1.0"],
+    install_requires=install_requires,
 )

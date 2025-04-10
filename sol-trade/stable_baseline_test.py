@@ -12,6 +12,10 @@ from stable_baselines3.common.env_util import make_vec_env
 import pickle
 from utils import dashboard
 import numpy as np
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # dashboard.start_dashboard()
 
@@ -19,8 +23,8 @@ import numpy as np
 gym.register(id='Sol-v0', entry_point='sol_env.sol_env:TradeEnv',max_episode_steps=5000)
 
 # Load your dataset
-# pckl_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/asc/data.pkl"
-pckl_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/asc/combined_df.pkl"
+# pckl_file_path = os.getenv("PCKL_FILE")
+pckl_file_path = os.getenv("PCKL_FILE_PATH")
 
 with open(pckl_file_path, 'rb') as f:
                 df = pickle.load(f)

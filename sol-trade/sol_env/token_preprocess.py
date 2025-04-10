@@ -2,6 +2,11 @@ import pandas as pd
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
 import torch
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def preprocess_data(csv_file):
     # Load the CSV file into a DataFrame
     df = pd.read_csv(csv_file, delimiter=',', on_bad_lines='warn')
@@ -47,6 +52,6 @@ def preprocess_data(csv_file):
     return tensor_data
 
 # Example usage:
-csv_file_path = '/home/abishek/sol-proj/ray/sol-trade/output.csv'
+csv_file_path = os.getenv("RAY_LOAD_CSV")
 data = preprocess_data(csv_file_path)
 print(data)

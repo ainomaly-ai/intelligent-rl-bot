@@ -2,10 +2,13 @@
 import gymnasium as gym
 from sol_env import TradeEnv
 import pickle 
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Load your dataset
-pckl_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/asc/data.pkl"
+pckl_file_path = os.getenv("PCKL_FILE")
 with open(pckl_file_path, 'rb') as f:
                 df = pickle.load(f)
 
