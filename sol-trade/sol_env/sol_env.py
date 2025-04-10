@@ -22,6 +22,10 @@ import asyncio
 import aiohttp
 import json
 import sys
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from typing import Optional
 Debug =   False
@@ -89,9 +93,9 @@ class TradeEnv(gym.Env):
             self.portfolio = Portfolio()
 
 
-        csv_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/output.csv"
-        pckl_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/asc/data.pkl"
-        pckl_file_path_eval = "/home/abishek/sol-proj/ray/sol-trade/data/asc/eval/data_eval.pkl"
+        csv_file_path = os.getenv("CSV_FILE") 
+        pckl_file_path = os.getenv("PCKL_FILE") 
+        pckl_file_path_eval = os.getenv("PCKL_EVAL_FILE") 
 
         # data_loader = DataLoader(csv_file_path)
         print(len(df_file))

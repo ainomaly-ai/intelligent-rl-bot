@@ -6,6 +6,12 @@ import json
 from utils.jupiter.jupiter_connect import extract_major_values
 from decimal import Decimal
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 
 def solana_cli(command):
     """Helper function to call Solana CLI commands."""
@@ -127,10 +133,10 @@ def burn_all_sol(wallet_key, burner_key):
 
 
 # Generate a new keypair for sender and recipient (or use existing ones)
-sender_key = '/home/abishek/.config/solana/sender.json'  # Replace with actual sender keypair file path
-recipient_key = '/home/abishek/.config/solana/receipient.json'  # Replace with actual recipient public key
-burner_key = '/home/abishek/.config/solana/burner.json'  # Replace with actual burner public key
-trade_key = '/home/abishek/.config/solana/trade.json'  # Replace with actual trade public key
+sender_key = os.getenv("SENDER_KEY")  # Replace with actual sender keypair file path
+recipient_key = os.getenv("RECIPIENT_KEY")  # Replace with actual recipient public key
+burner_key = os.getenv("BURNER_KEY")  # Replace with actual burner public key
+trade_key = os.getenv("TRADE_KEY")  # Replace with actual trade public key
 
 # params = {
 #     "inputMint": input_mint,

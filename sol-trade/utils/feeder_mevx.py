@@ -8,6 +8,11 @@ from sklearn.preprocessing import OneHotEncoder, LabelEncoder, MinMaxScaler, Sta
 import pickle
 from tabulate import tabulate
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 
 # from ray.tune.registry import get_trainable_cls, register_env  # noqa
@@ -114,7 +119,7 @@ class DataLoaderMevx:
 
 
 # Example usage:
-# csv_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/output.csv"
+# csv_file_path = os.getenv("CSV_FILE")
 # data_loader = DataLoaderMevx(csv_file_path)
 # # print(data_loader.df_head_bd)
 # # print(data_loader.df_head_ad)

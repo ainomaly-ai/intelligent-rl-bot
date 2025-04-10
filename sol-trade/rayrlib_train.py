@@ -11,9 +11,14 @@ from ray.tune.stopper import Stopper
 from utils import dashboard
 import gym
 from stable_baselines3.common.env_util import make_vec_env
-
+import os
 
 from ray.tune.search.hyperopt import HyperOptSearch
+
+
+
+load_dotenv()
+
 
 # ray.init(log_to_driver=False) 
 
@@ -34,7 +39,7 @@ Segment =True
 
 
 # Load your dataset
-pckl_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/asc/combined_df.pkl"
+pckl_file_path = os.getenv("PCKL_FILE_PATH") 
 with open(pckl_file_path, 'rb') as f:
                 df = pickle.load(f)
 
@@ -182,7 +187,7 @@ tune.run(
     mode="max",     
     stop=stop_criteria,
     log_to_file=True,
-    storage_path="/home/abishek/sol-proj/ray/sol-trade/ray_results",  # Specify the log directory for TensorBoard
+    storage_path=os.getenv("STORAGE_PATH"),  # Specify the log directory for TensorBoard
     verbose=1,                   # Set verbosity level (0: silent, 1: minimal, 2: detailed)
 )
     # stop=CustomStopper(num_envs, max_timesteps_list)  # Use the custom stopper

@@ -7,7 +7,10 @@ from stable_baselines3.common.vec_env import VecEnvWrapper
 from stable_baselines3.common.env_util import make_vec_env
 import pickle
 from utils import dashboard
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 
 # dashboard.start_dashboard()
@@ -16,7 +19,7 @@ from utils import dashboard
 gym.register(id='Sol-v0', entry_point='sol_env.sol_env:TradeEnv',max_episode_steps=5000)
 
 # Load your dataset
-pckl_file_path = "/home/abishek/sol-proj/ray/sol-trade/data/asc/eval/data_eval2.pkl"
+pckl_file_path = os.getenv("SB3_TEST_EVAL") 
 with open(pckl_file_path, 'rb') as f:
                 df = pickle.load(f)
 
