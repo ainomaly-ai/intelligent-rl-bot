@@ -1,6 +1,0 @@
-setup.py
-sol.egg-info/PKG-INFO
-sol.egg-info/SOURCES.txt
-sol.egg-info/dependency_links.txt
-sol.egg-info/requires.txt
-sol.egg-info/top_level.txt
