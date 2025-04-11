@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RL-trade-bot"
+version = "0.1.0"
+authors = [
+  { name = "Abishek Sunilkumar", email = "abisheksunil@gmail.com" }
+]
+description = "A highly experimental trading bot using Reinforcement Learning."
+readme = "Readme.MD"
+requires-python = "==3.8"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: PPL License",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+"dynamic"
+]
+[project.urls]
+"Homepage" = "https://github.com/ainomaly-ai/intelligent-rl-bot"
+"Bug Tracker" = "https://github.com/ainomaly-ai/intelligent-rl-bot/issues"
