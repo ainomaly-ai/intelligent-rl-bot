@@ -10,7 +10,7 @@ authors = [
 ]
 description = "A highly experimental trading bot using Reinforcement Learning."
 readme = "Readme.MD"
-requires-python = "==3.8*"
+requires-python = "==3.8.*"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: PPL License",
